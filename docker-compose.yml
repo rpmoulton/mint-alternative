@@ -7,7 +7,7 @@ services:
             target: dev
             dockerfile: Dockerfile
         ports:
-            - '3000:${PORT}'
+            - '${PORT:-3000}:3000'
         expose:
             - '3000'
         tty: true
@@ -19,7 +19,7 @@ services:
             database:
                 condition: service_healthy
         networks:
-            - tinker_network
+            - mint_alternative_network
         restart: always
 
     database:
@@ -52,7 +52,7 @@ services:
             timeout: 3s
             retries: 3
         networks:
-            - tinker_network
+            - mint_alternative_network
 
     queue:
         image: 'ghcr.io/riverqueue/riverui:master'
@@ -66,7 +66,7 @@ services:
             - 8000:3000
         restart: on-failure
         networks:
-            - tinker_network
+            - mint_alternative_network
 
     # postgres migration tool
     goose:
@@ -88,7 +88,7 @@ services:
         # https://github.com/pressly/goose?tab=readme-ov-file#usage
         entrypoint: ['goose', '-s', '-timeout', '5m']
         networks:
-            - tinker_network
+            - mint_alternative_network
         depends_on:
             database:
                 condition: service_healthy
@@ -106,7 +106,7 @@ services:
         entrypoint:
             ['river', '--line', 'main', '--database-url', '$DB_RIVER_URL']
         networks:
-            - tinker_network
+            - mint_alternative_network
         depends_on:
             database:
                 condition: service_healthy
@@ -116,4 +116,4 @@ volumes:
     db_data:
 
 networks:
-    tinker_network:
+    mint_alternative_network:

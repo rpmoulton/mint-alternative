@@ -6,12 +6,12 @@ import (
 	"net/netip"
 	"time"
 
-	"github.com/AxelTahmid/tinker/pkg/clientip"
+	"github.com/rpmoulton/mint-alternative/pkg/clientip"
 )
 
 type Server struct {
 	AppEnv         string        `default:"development"`
-	Name           string        `default:"tinker"`
+	Name           string        `default:"mint-alternative"`
 	Host           string        `default:"0.0.0.0"`
 	Domain         string        `                      required:"true"`
 	Port           int           `default:"3000"`

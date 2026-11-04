@@ -1,8 +1,8 @@
 package server
 
 import (
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
-	"github.com/AxelTahmid/tinker/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
 )
 
 // Enum registrations are part of the schema contract. Build fails if a named

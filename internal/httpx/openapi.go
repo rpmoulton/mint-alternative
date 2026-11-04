@@ -20,7 +20,7 @@ import (
 	"unicode"
 	"unicode/utf8"
 
-	"github.com/AxelTahmid/tinker/pkg/acl"
+	"github.com/rpmoulton/mint-alternative/pkg/acl"
 )
 
 const schemaRefPrefix = "#/components/schemas/"

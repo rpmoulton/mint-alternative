@@ -11,7 +11,7 @@ import (
 	"os"
 	"testing"
 
-	"github.com/AxelTahmid/tinker/pkg/acl"
+	"github.com/rpmoulton/mint-alternative/pkg/acl"
 )
 
 // committedSpec loads internal/server/openapi.json — the pinned document the
@@ -131,7 +131,7 @@ func TestOpenAPIIsDeterministic(t *testing.T) {
 		if err != nil {
 			t.Fatalf("Build: %v", err)
 		}
-		out, err := app.OpenAPI(Info{Title: "Tinker", Version: "1.0.0"})
+		out, err := app.OpenAPI(Info{Title: "Mint Alternative", Version: "1.0.0"})
 		if err != nil {
 			t.Fatalf("OpenAPI: %v", err)
 		}

@@ -7,7 +7,7 @@ import (
 
 	"github.com/go-chi/chi/v5/middleware"
 
-	"github.com/AxelTahmid/tinker/pkg/slogx"
+	"github.com/rpmoulton/mint-alternative/pkg/slogx"
 )
 
 // Logger middleware creates a handler that logs information about each HTTP request.

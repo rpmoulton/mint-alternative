@@ -8,8 +8,8 @@ import (
 	"github.com/riverqueue/river"
 	"github.com/riverqueue/river/rivertype"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 // NewInert returns a DB for OpenAPI docs generation: every construction-time

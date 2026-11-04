@@ -7,7 +7,7 @@ through pgx, sqlc-generated queries, Goose migrations, River jobs, JWT
 authentication, structured logging, Prometheus metrics, and a compiled typed
 HTTP/OpenAPI layer in `internal/httpx`.
 
-Module path: `github.com/AxelTahmid/tinker`.
+Module path: `github.com/rpmoulton/mint-alternative`.
 
 The project targets Go 1.26 and `encoding/json/v2`. Commands that compile or
 test the application must set `GOEXPERIMENT=jsonv2`; use the Make targets,

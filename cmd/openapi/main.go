@@ -6,9 +6,9 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/internal/server"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/server"
 )
 
 const specPath = "internal/server/openapi.json"

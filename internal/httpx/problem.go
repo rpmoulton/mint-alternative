@@ -18,7 +18,7 @@ import (
 
 // problemTypeNamespace is the URN prefix for problem type identifiers. URNs
 // are environment-independent and stable, unlike host-derived URLs.
-const problemTypeNamespace = "urn:tinker:error:"
+const problemTypeNamespace = "urn:mint-alternative:error:"
 
 // problemKindID is the closed identity of a problem kind. Keeping this type
 // and its values private prevents callers from minting a kind whose runtime
@@ -504,7 +504,7 @@ func writeProblemDetails(w http.ResponseWriter, problem *ProblemDetails) {
 			// This fixed value carries no custom marshalers or extensions. The
 			// literal is a last-resort guard against a broken JSON implementation.
 			slog.Error("Failed to encode fallback problem details", "error", err)
-			body = []byte(`{"type":"urn:tinker:error:server-error","title":"Internal Server Error","status":500,"detail":"internal error"}`)
+			body = []byte(`{"type":"urn:mint-alternative:error:server-error","title":"Internal Server Error","status":500,"detail":"internal error"}`)
 		}
 		problem = fallback
 	}

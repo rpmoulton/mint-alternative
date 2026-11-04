@@ -10,8 +10,8 @@ import (
 	"github.com/jackc/pgx/v5/pgconn"
 	"github.com/jackc/pgx/v5/pgxpool"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 // Common errors that can be checked with errors.Is .

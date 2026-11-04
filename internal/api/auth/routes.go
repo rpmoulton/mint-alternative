@@ -3,8 +3,8 @@ package auth
 import (
 	"net/http"
 
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/internal/jwt"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/jwt"
 )
 
 func (h *Handler) Routes() *httpx.Group {

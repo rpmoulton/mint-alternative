@@ -5,8 +5,8 @@ package config
 func DocsConfig() *Config {
 	return &Config{OpenAPI: OpenAPI{
 		Enabled:     true,
-		Title:       "Tinker API",
-		Description: "API documentation for the Go PostgreSQL starter",
+		Title:       "Mint Alternative API",
+		Description: "API documentation for Mint Alternative",
 		Version:     "1.0.0",
 		Servers:     []string{"https://localhost:3000"},
 		License: &License{

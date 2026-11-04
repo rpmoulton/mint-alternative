@@ -10,8 +10,8 @@ import (
 	"os/signal"
 	"syscall"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/db"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/db"
 )
 
 type Server struct {

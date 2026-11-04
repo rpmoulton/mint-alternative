@@ -12,8 +12,8 @@ import (
 	"github.com/riverqueue/river/riverdriver/riverpgxv5"
 	"github.com/riverqueue/river/rivertype"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/db/jobs"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/db/jobs"
 )
 
 // Common queue-related errors.

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"log/slog"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/db"
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/internal/jwt"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/db"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/jwt"
 )
 
 // BootstrapResult exposes the shared application dependencies so each entry

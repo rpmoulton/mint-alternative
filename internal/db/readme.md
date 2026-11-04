@@ -1,6 +1,6 @@
 # Database Package - `db`
 
-This package provides database access for the github.com/AxelTahmid/tinker application. It manages PostgreSQL connections, transaction handling, error mapping, and background job processing.
+This package provides database access for the github.com/rpmoulton/mint-alternative application. It manages PostgreSQL connections, transaction handling, error mapping, and background job processing.
 
 ## Architecture
 
@@ -45,8 +45,8 @@ import (
     "context"
     "log/slog"
 
-    "github.com/AxelTahmid/tinker/config"
-    "github.com/AxelTahmid/tinker/internal/db"
+    "github.com/rpmoulton/mint-alternative/config"
+    "github.com/rpmoulton/mint-alternative/internal/db"
 )
 
 func InitDatabase(ctx context.Context, conf *config.Config, logger *slog.Logger) (db.DB, error) {

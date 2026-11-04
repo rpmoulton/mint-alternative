@@ -2,8 +2,8 @@ package config
 
 type OpenAPI struct {
 	Enabled        bool     `split_words:"true" default:"true"`
-	Title          string   `split_words:"true" default:"Tinker API"`
-	Description    string   `split_words:"true" default:"API documentation for the Go PostgreSQL starter"`
+	Title          string   `split_words:"true" default:"Mint Alternative API"`
+	Description    string   `split_words:"true" default:"API documentation for Mint Alternative"`
 	Version        string   `split_words:"true" default:"1.0.0"`
 	Servers        []string `split_words:"true" default:"https://localhost:3000"`
 	TermsOfService string   `split_words:"true"`

@@ -6,8 +6,8 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/AxelTahmid/tinker/internal/db"
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/db"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 type Repository interface {

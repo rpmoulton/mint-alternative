@@ -9,12 +9,12 @@ import (
 	"github.com/go-chi/cors"
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/api/auth"
-	"github.com/AxelTahmid/tinker/internal/db"
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/internal/middleware"
-	"github.com/AxelTahmid/tinker/pkg/clientip"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/api/auth"
+	"github.com/rpmoulton/mint-alternative/internal/db"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/middleware"
+	"github.com/rpmoulton/mint-alternative/pkg/clientip"
 )
 
 // Routes declares the complete API tree. Build compiles request binding,

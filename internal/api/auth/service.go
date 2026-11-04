@@ -4,11 +4,11 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/AxelTahmid/tinker/internal/db"
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/internal/jwt"
-	"github.com/AxelTahmid/tinker/pkg/argon2id"
+	"github.com/rpmoulton/mint-alternative/internal/db"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/jwt"
+	"github.com/rpmoulton/mint-alternative/pkg/argon2id"
 )
 
 type Service interface {

@@ -9,10 +9,10 @@ import (
 
 	"github.com/lmittmann/tint"
 
-	"github.com/AxelTahmid/tinker/config"
-	"github.com/AxelTahmid/tinker/internal/server"
-	"github.com/AxelTahmid/tinker/pkg/buildinfo"
-	"github.com/AxelTahmid/tinker/pkg/slogx"
+	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/server"
+	"github.com/rpmoulton/mint-alternative/pkg/buildinfo"
+	"github.com/rpmoulton/mint-alternative/pkg/slogx"
 )
 
 func main() {

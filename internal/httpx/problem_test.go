@@ -34,53 +34,53 @@ func TestDispatcherWireMatchesLegacyCapture(t *testing.T) {
 		"typed not-found": {
 			err:        NewNotFoundError("order does not exist"),
 			wantStatus: http.StatusNotFound,
-			wantBody:   `{"type":"urn:tinker:error:not-found","title":"Not Found","status":404,"detail":"order does not exist","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:not-found","title":"Not Found","status":404,"detail":"order does not exist","instance":"GET /api/v1/parity"}`,
 		},
 		"typed conflict": {
 			err:        NewConflictError("duplicate code"),
 			wantStatus: http.StatusConflict,
-			wantBody:   `{"type":"urn:tinker:error:conflict","title":"Conflict","status":409,"detail":"duplicate code","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:conflict","title":"Conflict","status":409,"detail":"duplicate code","instance":"GET /api/v1/parity"}`,
 		},
 		"typed bad request": {
 			err:        NewBadRequestError("Invalid request: nope"),
 			wantStatus: http.StatusBadRequest,
-			wantBody:   `{"type":"urn:tinker:error:bad-request","title":"Bad Request","status":400,"detail":"Invalid request: nope","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:bad-request","title":"Bad Request","status":400,"detail":"Invalid request: nope","instance":"GET /api/v1/parity"}`,
 		},
 		"typed unauthorized": {
 			err:        NewUnauthorizedError("token expired"),
 			wantStatus: http.StatusUnauthorized,
-			wantBody:   `{"type":"urn:tinker:error:unauthorized","title":"Unauthorized","status":401,"detail":"token expired","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:unauthorized","title":"Unauthorized","status":401,"detail":"token expired","instance":"GET /api/v1/parity"}`,
 		},
 		"typed forbidden": {
 			err:        NewForbiddenError("not yours"),
 			wantStatus: http.StatusForbidden,
-			wantBody:   `{"type":"urn:tinker:error:forbidden","title":"Forbidden","status":403,"detail":"not yours","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:forbidden","title":"Forbidden","status":403,"detail":"not yours","instance":"GET /api/v1/parity"}`,
 		},
 		"typed internal": {
 			err:        NewInternalError("internal error"),
 			wantStatus: http.StatusInternalServerError,
-			wantBody:   `{"type":"urn:tinker:error:server-error","title":"Internal Server Error","status":500,"detail":"internal error","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:server-error","title":"Internal Server Error","status":500,"detail":"internal error","instance":"GET /api/v1/parity"}`,
 		},
 		"too many requests with retry": {
 			err:        NewTooManyRequestsError("slow down", 90*time.Second),
 			wantStatus: http.StatusTooManyRequests,
 			wantRetry:  "90",
-			wantBody:   `{"type":"urn:tinker:error:too-many-requests","title":"Too Many Requests","status":429,"detail":"slow down","instance":"GET /api/v1/parity","extensions":{"retry_after":90}}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:too-many-requests","title":"Too Many Requests","status":429,"detail":"slow down","instance":"GET /api/v1/parity","extensions":{"retry_after":90}}`,
 		},
 		"pg unique violation classifies to conflict": {
 			err:        pgError("23505"),
 			wantStatus: http.StatusConflict,
-			wantBody:   `{"type":"urn:tinker:error:conflict","title":"Conflict","status":409,"detail":"A resource with this information already exists","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:conflict","title":"Conflict","status":409,"detail":"A resource with this information already exists","instance":"GET /api/v1/parity"}`,
 		},
 		"pgx no rows classifies to not-found": {
 			err:        pgx.ErrNoRows,
 			wantStatus: http.StatusNotFound,
-			wantBody:   `{"type":"urn:tinker:error:not-found","title":"Not Found","status":404,"detail":"The requested resource was not found","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:not-found","title":"Not Found","status":404,"detail":"The requested resource was not found","instance":"GET /api/v1/parity"}`,
 		},
 		"raw error defaults to 500": {
 			err:        errors.New("something leaked"),
 			wantStatus: http.StatusInternalServerError,
-			wantBody:   `{"type":"urn:tinker:error:server-error","title":"Internal Server Error","status":500,"detail":"An unexpected error occurred","instance":"GET /api/v1/parity"}`,
+			wantBody:   `{"type":"urn:mint-alternative:error:server-error","title":"Internal Server Error","status":500,"detail":"An unexpected error occurred","instance":"GET /api/v1/parity"}`,
 		},
 	}
 
@@ -123,7 +123,7 @@ func TestValidationErrorsMapTo422WithFieldDetails(t *testing.T) {
 		t.Fatalf("status = %d, want 422", got.Code)
 	}
 	// The legacy 422 wire for the same validator error value.
-	want := `{"type":"urn:tinker:error:validation","title":"Validation Error","status":422,"detail":"One or more fields are invalid","instance":"POST /api/v1/thing","extensions":{"errors":[{"field":"email","message":"email is required"}]}}`
+	want := `{"type":"urn:mint-alternative:error:validation","title":"Validation Error","status":422,"detail":"One or more fields are invalid","instance":"POST /api/v1/thing","extensions":{"errors":[{"field":"email","message":"email is required"}]}}`
 	if got.Body.String() != want {
 		t.Fatalf("422 body mismatch:\n got: %s\nwant: %s", got.Body.String(), want)
 	}
@@ -309,7 +309,7 @@ func TestProblemKindOwnsStableWireIdentity(t *testing.T) {
 	if rec.Code != http.StatusNotFound {
 		t.Fatalf("status = %d, want sealed kind's 404", rec.Code)
 	}
-	if !strings.Contains(rec.Body.String(), `"type":"urn:tinker:error:not-found"`) {
+	if !strings.Contains(rec.Body.String(), `"type":"urn:mint-alternative:error:not-found"`) {
 		t.Fatalf("kind wire identity was not restored: %s", rec.Body.String())
 	}
 }
@@ -398,7 +398,7 @@ func TestRawErrorNormalizesMalformedProblemDetails(t *testing.T) {
 			if rec.Header().Get("Content-Type") != "application/problem+json" {
 				t.Fatalf("Content-Type = %q", rec.Header().Get("Content-Type"))
 			}
-			if !strings.Contains(rec.Body.String(), `"type":"urn:tinker:error:server-error"`) {
+			if !strings.Contains(rec.Body.String(), `"type":"urn:mint-alternative:error:server-error"`) {
 				t.Fatalf("malformed problem was not normalized: %s", rec.Body.String())
 			}
 		})

@@ -37,7 +37,7 @@ formatters:
       # with the given prefixes are grouped after 3rd-party packages.
       # Default: []
       local-prefixes:
-        - github.com/AxelTahmid/tinker
+        - github.com/rpmoulton/mint-alternative
 
     golines:
       # Target maximum line length.

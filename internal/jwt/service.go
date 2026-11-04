@@ -10,7 +10,7 @@ import (
 
 	"github.com/golang-jwt/jwt/v5"
 
-	"github.com/AxelTahmid/tinker/config"
+	"github.com/rpmoulton/mint-alternative/config"
 )
 
 const (

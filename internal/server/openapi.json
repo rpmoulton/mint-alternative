@@ -1,8 +1,8 @@
 {
   "openapi": "3.1.0",
   "info": {
-    "title": "Tinker API",
-    "description": "API documentation for the Go PostgreSQL starter",
+    "title": "Mint Alternative API",
+    "description": "API documentation for Mint Alternative",
     "license": {
       "name": "MIT",
       "url": "https://opensource.org/license/mit"

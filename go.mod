@@ -1,4 +1,4 @@
-module github.com/AxelTahmid/tinker
+module github.com/rpmoulton/mint-alternative
 
 go 1.26
 

@@ -6,7 +6,7 @@ import (
 	"net/http"
 	"slices"
 
-	"github.com/AxelTahmid/tinker/pkg/acl"
+	"github.com/rpmoulton/mint-alternative/pkg/acl"
 )
 
 // ---------------------------------------------------------------------------

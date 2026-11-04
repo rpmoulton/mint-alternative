@@ -27,7 +27,7 @@ FROM prod AS release
 WORKDIR /app
 COPY ./bin/main /
 CMD ["/main"]
-# ex: docker build -t gostarter:latest --target prod .
+# ex: docker build -t mint-alternative:latest --target prod .
 
 ## Goose  Migrations
 FROM base AS goose

@@ -3,7 +3,7 @@ package auth
 import (
 	"time"
 
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 type RegisterRequest struct {

@@ -4,7 +4,7 @@ import (
 	"context"
 	"log/slog"
 
-	"github.com/AxelTahmid/tinker/pkg/ctxkeys"
+	"github.com/rpmoulton/mint-alternative/pkg/ctxkeys"
 )
 
 // SlogFields is the context key under which AppendCtx accumulates attributes.

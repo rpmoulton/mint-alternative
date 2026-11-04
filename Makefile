@@ -66,7 +66,7 @@ tidy:
 # Semantic version from the VERSION file, injected into the binary at build
 # time and reported by the startup log. Bumped by `make release`.
 APP_VERSION := $(shell cat VERSION 2>/dev/null || echo dev)
-VERSION_LDFLAG := -X github.com/AxelTahmid/tinker/pkg/buildinfo.Version=$(APP_VERSION)
+VERSION_LDFLAG := -X github.com/rpmoulton/mint-alternative/pkg/buildinfo.Version=$(APP_VERSION)
 
 .PHONY: run build gen
 ## run: Run the API server

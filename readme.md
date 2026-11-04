@@ -79,7 +79,7 @@ This approach is intended to support additional financial data providers without
 
 ## Getting Started
 
-The project is currently being initialized from a Go API starter.
+The Go API uses PostgreSQL, JWT authentication, and River background jobs.
 
 ### Prerequisites
 
@@ -91,7 +91,7 @@ The project is currently being initialized from a Go API starter.
 ### Clone the Repository
 
 ```bash
-git clone <repository-url>
+git clone https://github.com/rpmoulton/mint-alternative.git
 cd mint-alternative
 ```
 
@@ -103,9 +103,22 @@ go mod download
 
 ### Run the Application
 
-The application entry point and required environment variables will be documented once the starter repository has been adapted.
+Copy `.env.example` to `.env` and review its local development settings. Then run:
 
-Refer to the starter project's existing development instructions in the meantime.
+```bash
+make init
+```
+
+This installs development tools, generates local TLS and JWT keys, starts Docker
+Compose, and applies application and River migrations. The API is available at
+`https://localhost:3000` with a self-signed certificate. Use `make up` for later
+starts. The example credentials are for local development only.
+
+To run the API on the host with `make run`, export the variables from `.env` and
+change the database URL hostnames from `database` to `localhost`.
+
+Run `make test` to test the backend and `make openapi` to regenerate its API
+contract.
 
 ## Development Roadmap
 

@@ -8,7 +8,7 @@ import (
 
 	chimiddleware "github.com/go-chi/chi/v5/middleware"
 
-	"github.com/AxelTahmid/tinker/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
 )
 
 // Recovery converts panics to a sanitized problem response. Request bodies

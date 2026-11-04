@@ -7,7 +7,7 @@ import (
 	"strings"
 	"time"
 
-	"github.com/AxelTahmid/tinker/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
 )
 
 // rateLimitPrefix namespaces every counter this limiter owns, so an operator

@@ -10,7 +10,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/AxelTahmid/tinker/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
 )
 
 // countingStore is a deterministic in-memory fixed-window counter. It lets the

@@ -6,8 +6,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/AxelTahmid/tinker/internal/httpx"
-	"github.com/AxelTahmid/tinker/pkg/ctxkeys"
+	"github.com/rpmoulton/mint-alternative/internal/httpx"
+	"github.com/rpmoulton/mint-alternative/pkg/ctxkeys"
 )
 
 const (

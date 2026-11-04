@@ -10,7 +10,7 @@ import (
 	"github.com/jackc/pgx/v5/pgxpool"
 	"github.com/jackc/pgx/v5/tracelog"
 
-	"github.com/AxelTahmid/tinker/config"
+	"github.com/rpmoulton/mint-alternative/config"
 )
 
 // createRootPool creates a new connection pool for root/admin access.

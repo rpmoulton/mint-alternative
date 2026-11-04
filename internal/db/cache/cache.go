@@ -19,7 +19,7 @@ import (
 
 	"github.com/jackc/pgx/v5"
 
-	"github.com/AxelTahmid/tinker/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 // maxTTLSeconds caps any caller-supplied window or TTL. It exists to keep the

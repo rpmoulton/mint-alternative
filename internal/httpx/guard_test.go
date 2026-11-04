@@ -10,7 +10,7 @@ import (
 	"strings"
 	"testing"
 
-	"github.com/AxelTahmid/tinker/pkg/acl"
+	"github.com/rpmoulton/mint-alternative/pkg/acl"
 )
 
 func TestRequiresBuildsOneANDedAlternative(t *testing.T) {

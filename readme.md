@@ -1,182 +1,197 @@
-# Go PostgreSQL API Starter
+# Mint Alternative
 
-A production-minded monolithic HTTP API template with typed routes, PostgreSQL,
-background jobs, JWT authentication, structured observability, and an OpenAPI
-3.1 document generated from the same compiled contracts used at runtime.
+An open-source personal finance platform inspired by Mint, designed to make budgeting, expense tracking, and financial insights accessible to everyone.
 
-## Included
+Mint Alternative aims to provide a modern, extensible personal finance experience with a free core product, optional premium features, and support for multiple financial institution integrations.
 
-- Go 1.26 with `encoding/json/v2`
-- chi routing and middleware
-- pgx connection pools and sqlc-generated queries
-- Goose database migrations
-- River PostgreSQL-backed jobs
-- JWT access and refresh tokens
-- validator-based request validation
-- RFC 9457 problem responses
-- slog structured logging and Prometheus metrics
-- deterministic OpenAPI generation with a CI drift gate
-- embedded Scalar API reference UI
-- Air hot reload and Docker Compose development services
+> **Project Status:** Early development. The application is not yet ready for production use.
 
-## Prerequisites
+## Features
 
-- Go 1.26+
-- Docker and Docker Compose v2
-- OpenSSL
-- Make
+### Planned Core Features
 
-The HTTP framework uses `encoding/json/v2`; the supplied Make and Air commands
-set `GOEXPERIMENT=jsonv2` consistently.
+- **Account Aggregation** — Connect bank accounts, credit cards, loans, and other financial accounts.
+- **Transaction Tracking** — Automatically import and categorize transactions.
+- **Budget Management** — Create monthly budgets and monitor spending against goals.
+- **Financial Dashboard** — View account balances, spending trends, and overall financial health.
+- **Net Worth Tracking** — Monitor assets and liabilities over time.
+- **Recurring Transactions** — Identify subscriptions, bills, and recurring income.
+- **Financial Goals** — Track savings targets and debt repayment progress.
+- **Manual Accounts** — Track accounts without requiring a financial institution connection.
 
-## Quick start
+### Planned Integrations
 
-For a first-time local setup:
+The application is being designed with a provider-independent integration layer, allowing multiple financial data services to be supported.
 
-```sh
-make init
-```
+Potential providers include:
 
-This creates `.env` from `.env.example`, generates local TLS/JWT keys, starts
-the containers, applies Goose and River migrations, and follows API logs.
+- Plaid
+- MX
+- Finicity (Mastercard Open Finance)
+- Other supported Open Banking providers
 
-For later sessions:
+Provider availability, pricing, and supported features will vary. Integrations will be implemented incrementally.
 
-```sh
-make dev
-```
+## Technology Stack
 
-To run the API directly on the host after its dependencies are available:
+The backend is being developed in Go, using a starter API as its initial foundation.
 
-```sh
-make run
-```
+| Component | Technology |
+|---|---|
+| Backend | Go |
+| API | REST |
+| Database | PostgreSQL (planned) |
+| Frontend | To be determined |
+| Authentication | To be determined |
+| Financial Integrations | Provider-agnostic architecture |
+| Deployment | Docker / Cloud hosting (planned) |
 
-The default endpoints are:
+The initial backend is based on a Go API starter project. Its existing architecture and dependencies will be evaluated and adapted as development progresses.
 
-- `https://localhost:3000/api/v1/auth/*` — starter authentication API
-- `https://localhost:3000/docs/ui` — Scalar API reference
-- `https://localhost:3000/docs/json` — embedded OpenAPI 3.1 document
-- `https://localhost:3000/metrics` — Prometheus metrics
-- `https://localhost:3000/ping` — transport heartbeat
+## Architecture
 
-## Common commands
-
-```sh
-make test             # all Go tests
-make lint             # golangci-lint
-make openapi          # regenerate the committed API contract
-make openapi-gate     # deterministic generation + drift check
-make sqlc-gen         # regenerate sqlc code
-make migrate-up       # apply database migrations
-make migrate-down     # roll back one migration
-make migrate-create filename=add_widgets
-make river-up         # apply River migrations
-make build os=linux arch=amd64
-```
-
-## Typed HTTP framework
-
-`internal/httpx` compiles each endpoint declaration once into request binding,
-validation, guard, response, problem, routing, and OpenAPI plans. Runtime and
-documentation therefore consume the same immutable contract.
-
-An API module returns an `*httpx.Group`; it does not import chi:
-
-```go
-func (h *Handler) Routes() *httpx.Group {
-    group := httpx.NewGroup(httpx.Defaults{Tags: []string{"widget"}})
-
-    httpx.Register(group, httpx.Operation[CreateWidgetInput, Widget]{
-        Method:             http.MethodPost,
-        Path:               "/",
-        Summary:            "Create a widget",
-        BodyDescription:    "Widget creation data",
-        SuccessDescription: "Widget created",
-        Success:            httpx.Enveloped(http.StatusCreated),
-        Problems: []httpx.ProblemKind{
-            httpx.Conflict().Described("A widget with this name already exists"),
-        },
-        Handler: h.Create,
-    })
-    return group
-}
-```
-
-The request type declares where each value comes from:
-
-```go
-type CreateWidgetInput struct {
-    Body CreateWidgetRequest `body:"required"`
-}
-
-type UpdateWidgetInput struct {
-    ID   int64               `path:"id" doc:"Widget ID"`
-    Body UpdateWidgetRequest `body:"required"`
-}
-```
-
-Supported source tags are `path`, `query`, `header`, `cookie`, and `body`.
-Validation tags drive both request validation and schema constraints. Typed
-handlers return `*httpx.Reply[T]` and an error; expected errors use typed
-problem constructors and must be declared by the operation.
-
-Response modes are explicit:
-
-| Mode | Wire shape | Reply |
-| --- | --- | --- |
-| `httpx.Enveloped(status)` | `{message,data}` | `httpx.OK` |
-| `httpx.PageOf(status)` | `{message,data,meta}` | `httpx.Paged` |
-| `httpx.Message(status)` | `{message}` | `httpx.Done` |
-| `httpx.RedirectWith(status)` | redirect | `httpx.RedirectTo` |
-
-`Build()` aggregates declaration errors before the server starts. It rejects
-ambiguous routes, bad source tags, unmatched path placeholders, invalid
-response modes, unknown validations, incomplete raw contracts, undeclared
-enums, and schema collisions.
-
-## OpenAPI and Scalar
-
-The generated document lives at `internal/server/openapi.json` and is embedded
-into the API binary. Generation is hermetic: it builds the real route tree over
-inert handler dependencies, so it needs no `.env`, database, JWT keys, or
-network. Scalar renders that embedded document at `/docs/ui`.
-
-```sh
-make openapi
-git diff -- internal/server/openapi.json
-make openapi-gate
-```
-
-Do not edit the JSON by hand. A route, validation, response, guard, enum, or
-status change is an API-contract change and should regenerate the document.
-
-## Project layout
+Mint Alternative is intended to use a modular architecture that separates financial data providers from core business logic.
 
 ```text
-cmd/
-  api/                 API server entry point
-  openapi/             deterministic contract generator
-config/                runtime and docs configuration
-internal/
-  api/                 domain handlers, services, repositories, DTOs
-  clientip/            trusted-proxy-aware client address resolution
-  db/                  pgx, migrations, queries, generated sqlc
-  httpx/               typed route compiler and OpenAPI generator
-  jwt/                 token service and typed guards
-  middleware/          transport middleware
-  server/              composition root, Scalar UI, embedded contract
-scripts/               repository gates and helper scripts
+                  Frontend
+                     |
+                     v
+                   Go API
+                     |
+       +-------------+-------------+
+       |             |             |
+    Accounts     Transactions    Budgets
+       |             |             |
+       +-------------+-------------+
+                     |
+              Data Access Layer
+                     |
+                PostgreSQL
+
+         Financial Integration Layer
+                     |
+          +----------+----------+
+          |          |          |
+        Plaid        MX       Finicity
 ```
 
-## Adding an endpoint
+This approach is intended to support additional financial data providers without tightly coupling the application to a single service.
 
-1. Define request and response types.
-2. Write a context-aware handler returning `*httpx.Reply[T]`.
-3. Register an `httpx.Operation` with summary, success mode, problems, and
-   guards.
-4. Mount the module group in `internal/server/routes.go`.
-5. Run `make openapi` and review the contract diff.
-6. Run `make test`.
+## Getting Started
 
-See [AGENTS.md](AGENTS.md) for repository-specific implementation rules.
+The project is currently being initialized from a Go API starter.
+
+### Prerequisites
+
+- Go (version determined by `go.mod`)
+- Git
+- PostgreSQL, when database persistence is configured
+- Docker, if using containerized development
+
+### Clone the Repository
+
+```bash
+git clone <repository-url>
+cd mint-alternative
+```
+
+### Install Dependencies
+
+```bash
+go mod download
+```
+
+### Run the Application
+
+The application entry point and required environment variables will be documented once the starter repository has been adapted.
+
+Refer to the starter project's existing development instructions in the meantime.
+
+## Development Roadmap
+
+### Phase 1 — Foundation
+
+- [ ] Configure Go API starter
+- [ ] Establish database models and migrations
+- [ ] Implement user authentication
+- [ ] Implement accounts and transactions APIs
+- [ ] Configure local development environment
+
+### Phase 2 — Personal Finance Essentials
+
+- [ ] Manual financial accounts
+- [ ] Transaction import and categorization
+- [ ] Budget creation and tracking
+- [ ] Financial dashboard
+- [ ] Net worth calculations
+
+### Phase 3 — Financial Institution Integrations
+
+- [ ] Define a common financial data provider interface
+- [ ] Implement first banking integration
+- [ ] Support account synchronization
+- [ ] Handle duplicate transactions and reconciliation
+- [ ] Add additional financial data providers
+
+### Phase 4 — Advanced Features
+
+- [ ] Recurring bill and subscription detection
+- [ ] Savings and debt repayment goals
+- [ ] Spending analytics and reporting
+- [ ] Transaction rules and automation
+- [ ] Data export and import
+
+### Phase 5 — Sustainability
+
+- [ ] Define optional premium features
+- [ ] Evaluate nonintrusive advertising
+- [ ] Establish infrastructure and integration cost controls
+- [ ] Support long-term operation of the free tier
+
+## Business Model
+
+The goal is to keep essential personal finance functionality free.
+
+Potential revenue sources include optional premium subscriptions, enhanced financial insights, and advertising where appropriate.
+
+Core financial information should remain accessible without requiring a paid subscription.
+
+## Security and Privacy
+
+Because Mint Alternative will handle sensitive financial information, security and privacy are central design requirements.
+
+Planned safeguards include:
+
+- Encrypted communication using HTTPS
+- Secure storage of financial integration credentials and tokens
+- Least-privilege access to financial data
+- Secure authentication and session management
+- Protection against unauthorized account access
+- User-controlled account disconnection and data deletion
+- Avoiding the storage of bank login credentials wherever provider-hosted authorization is available
+
+**Security Notice:** The project is under active development and has not been audited. Do not use it with real financial credentials or sensitive production data until appropriate security controls have been implemented and validated.
+
+## Contributing
+
+Contributions, suggestions, and feedback are welcome as the project develops.
+
+Contribution guidelines and development standards will be added as the architecture stabilizes.
+
+## License
+
+License to be determined.
+
+The project is intended to be open source. The final license will be selected after reviewing the licensing requirements of the starter repository and its dependencies.
+
+## Acknowledgments
+
+Mint Alternative is inspired by the original Mint personal finance application.
+
+The backend is being built using an existing Go API starter as its foundation.
+
+This project is independent and is not affiliated with Intuit or Mint.
+
+---
+
+**Mint Alternative — Personal finance without the unnecessary complexity.**

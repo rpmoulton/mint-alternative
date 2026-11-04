@@ -3,16 +3,22 @@ package auth
 import (
 	"time"
 
+	"github.com/rpmoulton/mint-alternative/internal/api/common"
 	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
+	"github.com/rpmoulton/mint-alternative/internal/jwt"
 )
 
 type RegisterRequest struct {
-	Email    string `json:"email"    validate:"required,email,lowercase"`
-	Password string `json:"password" validate:"required,min=8"`
+	Email             string `json:"email"              validate:"required,email,lowercase"`
+	Password          string `json:"password"           validate:"required,min=8"`
+	FirstName         string `json:"first_name"         validate:"omitempty,max=100"`
+	LastName          string `json:"last_name"          validate:"omitempty,max=100"`
+	PreferredCurrency string `json:"preferred_currency" validate:"omitempty,len=3"`
+	Timezone          string `json:"timezone"           validate:"omitempty,max=50"`
 }
 
 type LoginRequest struct {
-	Identity string `json:"identity" validate:"required,email_or_e164,lowercase"`
+	Email    string `json:"email"    validate:"required,email,lowercase"`
 	Password string `json:"password" validate:"required,min=8"`
 }
 
@@ -29,25 +35,30 @@ type EmptyInput struct{}
 // UserResponse is the client-safe projection of an auth user. Password hashes
 // and other authentication internals must never be serialized.
 type UserResponse struct {
-	ID            int64         `json:"id"`
-	Email         string        `json:"email"`
-	EmailVerified bool          `json:"email_verified"`
-	Phone         string        `json:"phone"`
-	PhoneVerified bool          `json:"phone_verified"`
-	Role          sqlc.RoleType `json:"role"`
-	CreatedAt     time.Time     `json:"created_at"`
-	UpdatedAt     time.Time     `json:"updated_at"`
+	ID                string    `json:"id"`
+	Email             string    `json:"email"`
+	FirstName         string    `json:"first_name"`
+	LastName          string    `json:"last_name"`
+	PreferredCurrency string    `json:"preferred_currency"`
+	Timezone          string    `json:"timezone"`
+	CreatedAt         time.Time `json:"created_at"`
+	UpdatedAt         time.Time `json:"updated_at"`
 }
 
-func userResponse(user sqlc.AuthUser) UserResponse {
+type AuthResponse struct {
+	User   UserResponse `json:"user"`
+	Tokens jwt.Tokens   `json:"tokens"`
+}
+
+func userResponse(user sqlc.User) UserResponse {
 	return UserResponse{
-		ID:            user.ID,
-		Email:         user.Email,
-		EmailVerified: user.EmailVerified,
-		Phone:         user.Phone,
-		PhoneVerified: user.PhoneVerified,
-		Role:          user.Role,
-		CreatedAt:     user.CreatedAt.Time,
-		UpdatedAt:     user.UpdatedAt.Time,
+		ID:                common.UUIDToString(user.ID),
+		Email:             user.Email,
+		FirstName:         user.FirstName,
+		LastName:          user.LastName,
+		PreferredCurrency: user.PreferredCurrency,
+		Timezone:          user.Timezone,
+		CreatedAt:         user.CreatedAt.Time,
+		UpdatedAt:         user.UpdatedAt.Time,
 	}
 }

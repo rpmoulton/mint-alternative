@@ -14,6 +14,7 @@ const (
 
 // RegisterWorkers registers all worker types.
 func RegisterWorkers(workers *river.Workers) {
-	// river.AddWorker(workers, &CustomerWorker{})
+	// Placeholder worker so River doesn't reject an empty worker registry.
+	river.AddWorker(workers, &NoopWorker{})
 	// Register application workers here.
 }

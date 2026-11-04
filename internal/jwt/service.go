@@ -22,7 +22,7 @@ type Service interface {
 	ParseRefreshToken(token string) (*Claims, error)
 	ParseAccessToken(token string) (*Claims, error)
 	IssueTokenPair(
-		userID int64,
+		userID string,
 		email, role string,
 	) (*Tokens, error)
 }

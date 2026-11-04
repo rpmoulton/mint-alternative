@@ -68,10 +68,14 @@ tidy:
 APP_VERSION := $(shell cat VERSION 2>/dev/null || echo dev)
 VERSION_LDFLAG := -X github.com/rpmoulton/mint-alternative/pkg/buildinfo.Version=$(APP_VERSION)
 
-.PHONY: run build gen
+.PHONY: run build gen seed
 ## run: Run the API server
 run:
 	GOEXPERIMENT=jsonv2 go run ./cmd/api
+
+## seed: Seed database with realistic development data
+seed:
+	GOEXPERIMENT=jsonv2 go run ./cmd/seed
 
 ## build: Build the API binary (make build os=linux arch=amd64)
 build:

@@ -10,12 +10,25 @@ import (
 func (h *Handler) Routes() *httpx.Group {
 	g := httpx.NewGroup(httpx.Defaults{Tags: []string{"auth"}})
 
-	httpx.Register(g, httpx.Operation[LoginInput, jwt.Tokens]{
+	httpx.Register(g, httpx.Operation[RegisterInput, AuthResponse]{
+		Method:             http.MethodPost,
+		Path:               "/register",
+		Summary:            "Register a user",
+		BodyDescription:    "New user registration details",
+		SuccessDescription: "User registered and tokens issued",
+		Success:            httpx.Enveloped(http.StatusCreated),
+		Problems: []httpx.ProblemKind{
+			httpx.Conflict().Described("A user with this email already exists"),
+		},
+		Handler: h.Register,
+	})
+
+	httpx.Register(g, httpx.Operation[LoginInput, AuthResponse]{
 		Method:             http.MethodPost,
 		Path:               "/login",
 		Summary:            "Log in",
 		BodyDescription:    "User credentials",
-		SuccessDescription: "Authentication tokens issued",
+		SuccessDescription: "Authentication successful and tokens issued",
 		Success:            httpx.Enveloped(http.StatusOK),
 		Problems: []httpx.ProblemKind{
 			httpx.Unauthorized().Described("The credentials are invalid"),
@@ -23,27 +36,15 @@ func (h *Handler) Routes() *httpx.Group {
 		Handler: h.Login,
 	})
 
-	httpx.Register(g, httpx.Operation[RegisterInput, httpx.NoBody]{
-		Method:             http.MethodPost,
-		Path:               "/register",
-		Summary:            "Register an administrator",
-		BodyDescription:    "New user details",
-		SuccessDescription: "User registered",
-		Success:            httpx.Message(http.StatusCreated),
-		Problems: []httpx.ProblemKind{
-			httpx.Conflict().Described("A user with this identity already exists"),
-		},
-		Handler: h.RegisterAdmin,
-	})
-
 	httpx.Register(g, httpx.Operation[EmptyInput, UserResponse]{
 		Method:             http.MethodGet,
 		Path:               "/me",
-		Summary:            "Get the current user",
-		SuccessDescription: "Current user returned",
+		Summary:            "Get current user profile",
+		SuccessDescription: "Current user profile returned",
 		Success:            httpx.Enveloped(http.StatusOK),
 		Problems: []httpx.ProblemKind{
 			httpx.NotFound().Described("The authenticated user no longer exists"),
+			httpx.BadRequest().Described("Invalid user token subject"),
 		},
 		Guards:  []httpx.Guard{jwt.AccessGuard()},
 		Handler: h.Me,
@@ -60,6 +61,16 @@ func (h *Handler) Routes() *httpx.Group {
 		},
 		Guards:  []httpx.Guard{jwt.RefreshGuard()},
 		Handler: h.Refresh,
+	})
+
+	httpx.Register(g, httpx.Operation[EmptyInput, httpx.NoBody]{
+		Method:             http.MethodPost,
+		Path:               "/logout",
+		Summary:            "Log out current session",
+		SuccessDescription: "Session terminated",
+		Success:            httpx.Message(http.StatusOK),
+		Guards:             []httpx.Guard{jwt.AccessGuard()},
+		Handler:            h.Logout,
 	})
 
 	return g

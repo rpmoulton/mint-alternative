@@ -5,7 +5,6 @@ import (
 	"errors"
 	"fmt"
 	"log/slog"
-	"strconv"
 	"time"
 
 	"github.com/golang-jwt/jwt/v5"
@@ -46,11 +45,11 @@ func (j *jwtService) createToken(claims *Claims) (string, error) {
 
 // IssueTokenPair generates access and refresh tokens for a user.
 func (j *jwtService) IssueTokenPair(
-	userID int64,
+	userID string,
 	email, role string,
 ) (*Tokens, error) {
-	if userID == 0 {
-		return nil, fmt.Errorf("%w: user ID cannot be zero", errInvalidClaims)
+	if userID == "" {
+		return nil, fmt.Errorf("%w: user ID cannot be empty", errInvalidClaims)
 	}
 	if email == "" {
 		return nil, fmt.Errorf("%w: email cannot be empty", errInvalidClaims)
@@ -59,7 +58,7 @@ func (j *jwtService) IssueTokenPair(
 		return nil, fmt.Errorf("%w: role cannot be empty", errInvalidClaims)
 	}
 
-	userIDStr := strconv.FormatInt(userID, 10)
+	userIDStr := userID
 	now := time.Now()
 
 	accessClaims := &Claims{
@@ -136,17 +135,11 @@ func (j *jwtService) ParseRefreshToken(token string) (*Claims, error) {
 	return j.parseTokenClaims(token, RefreshIssuer)
 }
 
-func ParseClaimsCtx(ctx context.Context) (*Claims, int64, error) {
+func ParseClaimsCtx(ctx context.Context) (*Claims, string, error) {
 	raw, ok := ctx.Value(AuthCtxKey).(*Claims)
 	if !ok {
-		return nil, 0, errTokenNotFound
+		return nil, "", errTokenNotFound
 	}
 
-	// parse the RegisteredClaims.ID (string) into an int64
-	uid, err := strconv.ParseInt(raw.RegisteredClaims.ID, 10, 64)
-	if err != nil {
-		return nil, 0, fmt.Errorf("invalid user ID in token claims: %w", err)
-	}
-
-	return raw, uid, nil
+	return raw, raw.RegisteredClaims.ID, nil
 }

@@ -1,45 +1,33 @@
--- name: GetUser :one
-SELECT
-    *
-FROM
-    auth_users
-WHERE
-    email = LOWER(@Email);
+-- name: GetUserByEmail :one
+SELECT * FROM users
+WHERE email = LOWER(@email);
 
--- name: CreateAdminUser :exec
-INSERT INTO
-    auth_users (
-        email,
-        phone,
-        password,
-        role,
-        tenant_id,
-        customer_id
-    )
-VALUES
-    (
-        LOWER(@Email),
-        @Phone,
-        @Password,
-        'admin'::role_type, -- Admin role
-        NULL, -- No tenant ID
-        NULL -- No customer ID
-    )
-RETURNING
-    id;
+-- name: GetUserByID :one
+SELECT * FROM users
+WHERE id = @id;
 
--- name: UpdateVerification :execrows
-UPDATE auth_users
-SET
-    email_verified = @EmailVerified,
-    phone_verified = @PhoneVerified
-WHERE
-    id = @userID;
+-- name: CreateUser :one
+INSERT INTO users (
+    email,
+    password_hash,
+    first_name,
+    last_name,
+    preferred_currency,
+    timezone
+) VALUES (
+    LOWER(@email),
+    @password_hash,
+    @first_name,
+    @last_name,
+    @preferred_currency,
+    @timezone
+) RETURNING *;
 
--- name: GetUserDetails :one
-SELECT
-    *
-FROM
-    auth_users au
-WHERE
-    au.email = @Email;
+-- name: UpdateUser :one
+UPDATE users SET
+    first_name = @first_name,
+    last_name = @last_name,
+    preferred_currency = @preferred_currency,
+    timezone = @timezone
+WHERE id = @id
+RETURNING *;

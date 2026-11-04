@@ -10,7 +10,13 @@ import (
 	"github.com/prometheus/client_golang/prometheus/promhttp"
 
 	"github.com/rpmoulton/mint-alternative/config"
+	"github.com/rpmoulton/mint-alternative/internal/api/accounts"
 	"github.com/rpmoulton/mint-alternative/internal/api/auth"
+	"github.com/rpmoulton/mint-alternative/internal/api/budgets"
+	"github.com/rpmoulton/mint-alternative/internal/api/categories"
+	"github.com/rpmoulton/mint-alternative/internal/api/dashboard"
+	"github.com/rpmoulton/mint-alternative/internal/api/institutions"
+	"github.com/rpmoulton/mint-alternative/internal/api/transactions"
 	"github.com/rpmoulton/mint-alternative/internal/db"
 	"github.com/rpmoulton/mint-alternative/internal/httpx"
 	"github.com/rpmoulton/mint-alternative/internal/middleware"
@@ -24,6 +30,12 @@ import (
 // and the docs generator, so a route cannot exist in one and not the other.
 func (s *Server) Routes() *httpx.Group {
 	authHandler := auth.NewHandler(auth.NewService(auth.NewRepository(s.db)))
+	institutionsHandler := institutions.NewHandler(institutions.NewService(institutions.NewRepository(s.db)))
+	accountsHandler := accounts.NewHandler(accounts.NewService(accounts.NewRepository(s.db)))
+	categoriesHandler := categories.NewHandler(categories.NewService(categories.NewRepository(s.db)))
+	transactionsHandler := transactions.NewHandler(transactions.NewService(transactions.NewRepository(s.db)))
+	budgetsHandler := budgets.NewHandler(budgets.NewService(budgets.NewRepository(s.db)))
+	dashboardHandler := dashboard.NewHandler(dashboard.NewService(dashboard.NewRepository(s.db)))
 
 	root := httpx.NewGroup(httpx.Defaults{})
 	root.HandleInfra(http.MethodGet, "/metrics", promhttp.Handler())
@@ -32,6 +44,12 @@ func (s *Server) Routes() *httpx.Group {
 
 	v1 := root.Sub("/api/v1")
 	v1.Mount("/auth", authHandler.Routes())
+	v1.Mount("/institutions", institutionsHandler.Routes())
+	v1.Mount("/accounts", accountsHandler.Routes())
+	v1.Mount("/categories", categoriesHandler.Routes())
+	v1.Mount("/transactions", transactionsHandler.Routes())
+	v1.Mount("/budgets", budgetsHandler.Routes())
+	v1.Mount("/dashboard", dashboardHandler.Routes())
 	return root
 }
 

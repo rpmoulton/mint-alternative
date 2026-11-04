@@ -4,17 +4,16 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/jackc/pgx/v5"
+	"github.com/jackc/pgx/v5/pgtype"
 
 	"github.com/rpmoulton/mint-alternative/internal/db"
 	"github.com/rpmoulton/mint-alternative/internal/db/sqlc"
 )
 
 type Repository interface {
-	FindUser(ctx context.Context, email string) (*sqlc.AuthUser, error)
-	GetUserDetails(ctx context.Context, email string) (sqlc.AuthUser, error)
-	CreateAdmin(ctx context.Context, user *RegisterRequest) error
-	UpdateVerificationStatus(ctx context.Context, userID int64, emailVerified, phoneVerified bool) error
+	FindUserByEmail(ctx context.Context, email string) (*sqlc.User, error)
+	FindUserByID(ctx context.Context, id pgtype.UUID) (*sqlc.User, error)
+	CreateUser(ctx context.Context, params sqlc.CreateUserParams) (*sqlc.User, error)
 }
 
 type repository struct {
@@ -27,48 +26,26 @@ func NewRepository(pg db.DB) Repository {
 	}
 }
 
-func (r *repository) FindUser(ctx context.Context, identity string) (*sqlc.AuthUser, error) {
-	user, err := r.query.GetUser(ctx, identity)
+func (r *repository) FindUserByEmail(ctx context.Context, email string) (*sqlc.User, error) {
+	user, err := r.query.GetUserByEmail(ctx, email)
 	if err != nil {
-		return nil, fmt.Errorf("find user %q: %w", identity, err)
+		return nil, fmt.Errorf("find user by email %q: %w", email, err)
 	}
-
 	return &user, nil
 }
 
-func (r *repository) GetUserDetails(ctx context.Context, identity string) (sqlc.AuthUser, error) {
-	user, err := r.query.GetUserDetails(ctx, identity)
+func (r *repository) FindUserByID(ctx context.Context, id pgtype.UUID) (*sqlc.User, error) {
+	user, err := r.query.GetUserByID(ctx, id)
 	if err != nil {
-		return sqlc.AuthUser{}, fmt.Errorf("get user details %q: %w", identity, err)
+		return nil, fmt.Errorf("find user by id %v: %w", id, err)
 	}
-
-	return user, nil
+	return &user, nil
 }
 
-func (r *repository) CreateAdmin(ctx context.Context, user *RegisterRequest) error {
-	return r.query.CreateAdminUser(ctx, sqlc.CreateAdminUserParams{
-		Email:    user.Email,
-		Password: user.Password,
-	})
-}
-
-func (r *repository) UpdateVerificationStatus(
-	ctx context.Context,
-	userID int64,
-	emailVerified, phoneVerified bool,
-) error {
-	rows, err := r.query.UpdateVerification(ctx, sqlc.UpdateVerificationParams{
-		Userid:        userID,
-		Emailverified: emailVerified,
-		Phoneverified: phoneVerified,
-	})
+func (r *repository) CreateUser(ctx context.Context, params sqlc.CreateUserParams) (*sqlc.User, error) {
+	user, err := r.query.CreateUser(ctx, params)
 	if err != nil {
-		return err
+		return nil, fmt.Errorf("create user: %w", err)
 	}
-
-	if rows == 0 {
-		return pgx.ErrNoRows
-	}
-
-	return nil
+	return &user, nil
 }

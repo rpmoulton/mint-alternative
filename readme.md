@@ -39,12 +39,12 @@ The backend is being developed in Go, using a starter API as its initial foundat
 | Component | Technology |
 |---|---|
 | Backend | Go |
-| API | REST |
-| Database | PostgreSQL (planned) |
-| Frontend | To be determined |
-| Authentication | To be determined |
+| API | REST / OpenAPI 3.1 |
+| Database | PostgreSQL (Goose migrations, sqlc) |
+| Frontend | React 19, TypeScript, Vite, Tailwind CSS v4, shadcn/ui |
+| Authentication | JWT (ECDSA ES256) & Argon2id |
 | Financial Integrations | Provider-agnostic architecture |
-| Deployment | Docker / Cloud hosting (planned) |
+| Deployment | Docker Compose / Cloud hosting (planned) |
 
 The initial backend is based on a Go API starter project. Its existing architecture and dependencies will be evaluated and adapted as development progresses.
 
@@ -124,19 +124,19 @@ contract.
 
 ### Phase 1 — Foundation
 
-- [ ] Configure Go API starter
-- [ ] Establish database models and migrations
-- [ ] Implement user authentication
-- [ ] Implement accounts and transactions APIs
-- [ ] Configure local development environment
+- [x] Configure Go API starter
+- [x] Establish database models and migrations
+- [x] Implement user authentication
+- [x] Implement accounts and transactions APIs
+- [x] Configure local development environment
 
 ### Phase 2 — Personal Finance Essentials
 
-- [ ] Manual financial accounts
-- [ ] Transaction import and categorization
-- [ ] Budget creation and tracking
-- [ ] Financial dashboard
-- [ ] Net worth calculations
+- [x] Manual financial accounts
+- [x] Transaction import and categorization
+- [x] Budget creation and tracking
+- [x] Financial dashboard
+- [x] Net worth calculations
 
 ### Phase 3 — Financial Institution Integrations
 

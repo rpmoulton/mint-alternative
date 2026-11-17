@@ -162,6 +162,9 @@ func (s *service) Create(ctx context.Context, userID string, req *CreateTransact
 	if err != nil {
 		return nil, httpx.NewBadRequestError("account not found or not owned by user")
 	}
+	if acc.ArchivedAt.Valid {
+		return nil, httpx.NewBadRequestError("cannot create transaction for archived account")
+	}
 
 	var catID pgtype.UUID
 	if req.CategoryID != nil && *req.CategoryID != "" {
@@ -298,22 +301,95 @@ func (s *service) Update(ctx context.Context, id, userID string, req *UpdateTran
 		}
 	}
 
-	var amountNumeric pgtype.Numeric
+	// Compute new amount and update balance if amount, transaction type, or account changed
+	oldDec, _ := decimal.NewFromString(common.NumericToString(existing.Amount))
+	newDec := oldDec
 	if req.Amount != nil {
-		decAmount, err := decimal.NewFromString(*req.Amount)
+		dec, err := decimal.NewFromString(*req.Amount)
 		if err != nil {
 			return nil, httpx.NewBadRequestError("invalid amount format")
 		}
-		txType := existing.TransactionType
-		if req.TransactionType != nil {
-			txType = *req.TransactionType
+		newDec = dec
+	}
+	newType := existing.TransactionType
+	if req.TransactionType != nil {
+		newType = *req.TransactionType
+	}
+	if newType == "debit" && newDec.IsPositive() {
+		newDec = newDec.Neg()
+	} else if newType == "credit" && newDec.IsNegative() {
+		newDec = newDec.Abs()
+	}
+
+	var amountNumeric pgtype.Numeric
+	if req.Amount != nil || req.TransactionType != nil {
+		amountNumeric, _ = common.StringToNumeric(newDec.StringFixed(4))
+	}
+
+	targetAccID := existing.AccountID
+	if accID.Valid {
+		targetAccID = accID
+	}
+
+	amountChanged := !newDec.Equal(oldDec)
+	accountChanged := accID.Valid && accID != existing.AccountID
+
+	var targetAcc *sqlc.GetAccountByIDRow
+	if accountChanged {
+		var err error
+		targetAcc, err = s.repo.GetAccountByID(ctx, targetAccID, uid)
+		if err != nil {
+			return nil, httpx.NewBadRequestError("account not found or not owned by user")
 		}
-		if txType == "debit" && decAmount.IsPositive() {
-			decAmount = decAmount.Neg()
-		} else if txType == "credit" && decAmount.IsNegative() {
-			decAmount = decAmount.Abs()
+		if targetAcc.ArchivedAt.Valid {
+			return nil, httpx.NewBadRequestError("cannot move transaction to archived account")
 		}
-		amountNumeric, _ = common.StringToNumeric(decAmount.StringFixed(4))
+	}
+
+	var oldAcc *sqlc.GetAccountByIDRow
+	if amountChanged || accountChanged {
+		var err error
+		oldAcc, err = s.repo.GetAccountByID(ctx, existing.AccountID, uid)
+		if err != nil {
+			return nil, httpx.NewBadRequestError("existing account not found")
+		}
+		if targetAcc == nil {
+			targetAcc = oldAcc
+		}
+	}
+
+	var oldDelta decimal.Decimal
+	var newDelta decimal.Decimal
+	var oldDeltaApplied, newDeltaApplied bool
+
+	if amountChanged || accountChanged {
+		// 1. Revert from old account
+		revertDelta := oldDec.Neg()
+		if oldAcc.AccountType == "credit" || oldAcc.AccountType == "loan" || oldAcc.AccountType == "other_liability" {
+			revertDelta = oldDec
+		}
+		oldDelta = revertDelta
+		revertNumeric, _ := common.StringToNumeric(revertDelta.StringFixed(4))
+		if _, err := s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, revertNumeric); err != nil {
+			return nil, httpx.NewInternalError("could not update account balance")
+		}
+		oldDeltaApplied = true
+
+		// 2. Apply to target account
+		applyDelta := newDec
+		if targetAcc.AccountType == "credit" || targetAcc.AccountType == "loan" || targetAcc.AccountType == "other_liability" {
+			applyDelta = newDec.Neg()
+		}
+		newDelta = applyDelta
+		applyNumeric, _ := common.StringToNumeric(applyDelta.StringFixed(4))
+		if _, err := s.repo.UpdateAccountBalance(ctx, targetAccID, uid, applyNumeric); err != nil {
+			if oldDeltaApplied {
+				rbOld, _ := common.StringToNumeric(oldDelta.Neg().StringFixed(4))
+				_, _ = s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, rbOld)
+			}
+			return nil, httpx.NewInternalError("could not update account balance")
+		}
+		newDeltaApplied = true
 	}
 
 	_, err = s.repo.UpdateTransaction(ctx, sqlc.UpdateTransactionParams{
@@ -332,6 +408,14 @@ func (s *service) Update(ctx context.Context, id, userID string, req *UpdateTran
 		Status:          req.Status,
 	})
 	if err != nil {
+		if newDeltaApplied {
+			rbNew, _ := common.StringToNumeric(newDelta.Neg().StringFixed(4))
+			_, _ = s.repo.UpdateAccountBalance(ctx, targetAccID, uid, rbNew)
+		}
+		if oldDeltaApplied {
+			rbOld, _ := common.StringToNumeric(oldDelta.Neg().StringFixed(4))
+			_, _ = s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, rbOld)
+		}
 		slog.ErrorContext(ctx, "failed to update transaction", "id", id, "error", err)
 		return nil, httpx.NewInternalError("could not update transaction")
 	}
@@ -359,17 +443,25 @@ func (s *service) Delete(ctx context.Context, id, userID string) error {
 	}
 
 	acc, err := s.repo.GetAccountByID(ctx, existing.AccountID, uid)
+	var revertApplied bool
+	var revertDelta decimal.Decimal
 	if err == nil && acc != nil {
 		existingDec, _ := decimal.NewFromString(common.NumericToString(existing.Amount))
-		revertDelta := existingDec.Neg()
+		revertDelta = existingDec.Neg()
 		if acc.AccountType == "credit" || acc.AccountType == "loan" || acc.AccountType == "other_liability" {
 			revertDelta = existingDec
 		}
 		revertNumeric, _ := common.StringToNumeric(revertDelta.StringFixed(4))
-		_, _ = s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, revertNumeric)
+		if _, err := s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, revertNumeric); err == nil {
+			revertApplied = true
+		}
 	}
 
 	if err := s.repo.DeleteTransaction(ctx, txID, uid); err != nil {
+		if revertApplied {
+			restoreNumeric, _ := common.StringToNumeric(revertDelta.Neg().StringFixed(4))
+			_, _ = s.repo.UpdateAccountBalance(ctx, existing.AccountID, uid, restoreNumeric)
+		}
 		slog.ErrorContext(ctx, "failed to delete transaction", "id", id, "error", err)
 		return httpx.NewInternalError("could not delete transaction")
 	}

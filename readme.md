@@ -193,9 +193,7 @@ Contribution guidelines and development standards will be added as the architect
 
 ## License
 
-License to be determined.
-
-The project is intended to be open source. The final license will be selected after reviewing the licensing requirements of the starter repository and its dependencies.
+This project is licensed under the [Apache License, Version 2.0](LICENSE).
 
 ## Acknowledgments
 

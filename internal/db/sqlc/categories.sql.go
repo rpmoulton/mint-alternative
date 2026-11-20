@@ -11,6 +11,30 @@ import (
 	"github.com/jackc/pgx/v5/pgtype"
 )
 
+const countChildCategories = `-- name: CountChildCategories :one
+SELECT COUNT(*) FROM categories
+WHERE parent_category_id = $1
+`
+
+func (q *Queries) CountChildCategories(ctx context.Context, categoryID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countChildCategories, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
+const countTransactionsByCategoryID = `-- name: CountTransactionsByCategoryID :one
+SELECT COUNT(*) FROM transactions
+WHERE category_id = $1
+`
+
+func (q *Queries) CountTransactionsByCategoryID(ctx context.Context, categoryID pgtype.UUID) (int64, error) {
+	row := q.db.QueryRow(ctx, countTransactionsByCategoryID, categoryID)
+	var count int64
+	err := row.Scan(&count)
+	return count, err
+}
+
 const createCategory = `-- name: CreateCategory :one
 INSERT INTO categories (
     user_id,
@@ -146,19 +170,23 @@ UPDATE categories SET
     type = COALESCE($2, type),
     icon = COALESCE($3, icon),
     color = COALESCE($4, color),
-    parent_category_id = COALESCE($5, parent_category_id)
-WHERE id = $6 AND user_id = $7
+    parent_category_id = CASE
+        WHEN $5::boolean THEN $6
+        ELSE parent_category_id
+    END
+WHERE id = $7 AND user_id = $8
 RETURNING id, user_id, parent_category_id, name, type, icon, color, created_at, updated_at
 `
 
 type UpdateCategoryParams struct {
-	Name             *string     `json:"name"`
-	Type             *string     `json:"type"`
-	Icon             *string     `json:"icon"`
-	Color            *string     `json:"color"`
-	ParentCategoryID pgtype.UUID `json:"parent_category_id"`
-	ID               pgtype.UUID `json:"id"`
-	UserID           pgtype.UUID `json:"user_id"`
+	Name                *string     `json:"name"`
+	Type                *string     `json:"type"`
+	Icon                *string     `json:"icon"`
+	Color               *string     `json:"color"`
+	SetParentCategoryID bool        `json:"set_parent_category_id"`
+	ParentCategoryID    pgtype.UUID `json:"parent_category_id"`
+	ID                  pgtype.UUID `json:"id"`
+	UserID              pgtype.UUID `json:"user_id"`
 }
 
 func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) (Category, error) {
@@ -167,6 +195,7 @@ func (q *Queries) UpdateCategory(ctx context.Context, arg UpdateCategoryParams) 
 		arg.Type,
 		arg.Icon,
 		arg.Color,
+		arg.SetParentCategoryID,
 		arg.ParentCategoryID,
 		arg.ID,
 		arg.UserID,

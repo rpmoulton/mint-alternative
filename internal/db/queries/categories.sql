@@ -30,10 +30,21 @@ UPDATE categories SET
     type = COALESCE(sqlc.narg('type'), type),
     icon = COALESCE(sqlc.narg('icon'), icon),
     color = COALESCE(sqlc.narg('color'), color),
-    parent_category_id = COALESCE(sqlc.narg('parent_category_id'), parent_category_id)
+    parent_category_id = CASE
+        WHEN @set_parent_category_id::boolean THEN @parent_category_id
+        ELSE parent_category_id
+    END
 WHERE id = @id AND user_id = @user_id
 RETURNING *;
 
 -- name: DeleteCategory :exec
 DELETE FROM categories
 WHERE id = @id AND user_id = @user_id;
+
+-- name: CountTransactionsByCategoryID :one
+SELECT COUNT(*) FROM transactions
+WHERE category_id = @category_id;
+
+-- name: CountChildCategories :one
+SELECT COUNT(*) FROM categories
+WHERE parent_category_id = @category_id;

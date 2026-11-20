@@ -16,6 +16,8 @@ type Repository interface {
 	CreateCategory(ctx context.Context, params sqlc.CreateCategoryParams) (*sqlc.Category, error)
 	UpdateCategory(ctx context.Context, params sqlc.UpdateCategoryParams) (*sqlc.Category, error)
 	DeleteCategory(ctx context.Context, id, userID pgtype.UUID) error
+	CountTransactionsByCategoryID(ctx context.Context, categoryID pgtype.UUID) (int64, error)
+	CountChildCategories(ctx context.Context, categoryID pgtype.UUID) (int64, error)
 }
 
 type repository struct {
@@ -72,4 +74,12 @@ func (r *repository) DeleteCategory(ctx context.Context, id, userID pgtype.UUID)
 		return fmt.Errorf("delete category: %w", err)
 	}
 	return nil
+}
+
+func (r *repository) CountTransactionsByCategoryID(ctx context.Context, categoryID pgtype.UUID) (int64, error) {
+	return r.query.CountTransactionsByCategoryID(ctx, categoryID)
+}
+
+func (r *repository) CountChildCategories(ctx context.Context, categoryID pgtype.UUID) (int64, error) {
+	return r.query.CountChildCategories(ctx, categoryID)
 }

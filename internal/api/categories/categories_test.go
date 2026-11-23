@@ -330,3 +330,40 @@ func TestSafeDeletionProtections(t *testing.T) {
 		t.Fatalf("unexpected error deleting unused category: %v", err)
 	}
 }
+
+func TestInvalidParentRelationship(t *testing.T) {
+	repo := newMockCategoryRepo()
+	svc := NewService(repo)
+	ctx := context.Background()
+
+	userA := "aaaaaaaa-aaaa-aaaa-aaaa-aaaaaaaaaaaa"
+	nonExistentParent := "99999999-9999-9999-9999-999999999999"
+
+	// 1. Create with non-existent parent returns 400 Bad Request
+	_, err := svc.Create(ctx, userA, &CreateCategoryRequest{
+		Name:             "Child Category",
+		Type:             "expense",
+		ParentCategoryID: &nonExistentParent,
+	})
+	if err == nil {
+		t.Fatal("expected error creating category with non-existent parent, got nil")
+	}
+	var prob *httpx.ProblemDetails
+	if !errors.As(err, &prob) || prob.Status != 400 {
+		t.Fatalf("expected 400 Bad Request, got %v", err)
+	}
+
+	// 2. Update with non-existent parent returns 400 Bad Request
+	catID := "11111111-1111-1111-1111-111111111111"
+	repo.addCategory(catID, &userA, nil, "User Category", "expense")
+
+	_, err = svc.Update(ctx, catID, userA, &UpdateCategoryRequest{
+		ParentCategoryID: &nonExistentParent,
+	})
+	if err == nil {
+		t.Fatal("expected error updating category with non-existent parent, got nil")
+	}
+	if !errors.As(err, &prob) || prob.Status != 400 {
+		t.Fatalf("expected 400 Bad Request, got %v", err)
+	}
+}

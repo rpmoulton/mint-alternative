@@ -108,6 +108,21 @@ func (s *service) Get(ctx context.Context, id, userID string) (*BudgetResponse, 
 		spendingByCat[catStr] = dec
 	}
 
+	allCats, _ := s.repo.ListCategories(ctx, uid)
+	parentToChildren := make(map[string][]string)
+	for _, c := range allCats {
+		if c.ParentCategoryID.Valid {
+			pidStr := common.UUIDToString(c.ParentCategoryID)
+			cidStr := common.UUIDToString(c.ID)
+			parentToChildren[pidStr] = append(parentToChildren[pidStr], cidStr)
+		}
+	}
+
+	allocatedSet := make(map[string]bool)
+	for _, ca := range catAllocations {
+		allocatedSet[common.UUIDToString(ca.CategoryID)] = true
+	}
+
 	totalAllocated := decimal.Zero
 	totalSpent := decimal.Zero
 
@@ -118,6 +133,14 @@ func (s *service) Get(ctx context.Context, id, userID string) (*BudgetResponse, 
 		totalAllocated = totalAllocated.Add(allocatedDec)
 
 		spentDec := spendingByCat[catIDStr]
+		// If this is a parent category, rollup spending from child categories not explicitly allocated
+		if children, exists := parentToChildren[catIDStr]; exists {
+			for _, childID := range children {
+				if !allocatedSet[childID] {
+					spentDec = spentDec.Add(spendingByCat[childID])
+				}
+			}
+		}
 		totalSpent = totalSpent.Add(spentDec)
 
 		remainingDec := allocatedDec.Sub(spentDec)
@@ -253,6 +276,48 @@ func (s *service) UpsertCategory(ctx context.Context, id, userID string, req *Up
 	allocDec, err := decimal.NewFromString(req.AllocatedAmount)
 	if err != nil || allocDec.IsNegative() {
 		return nil, httpx.NewBadRequestError("allocated amount must be a non-negative number")
+	}
+
+	// Verify category exists, belongs to user or is system, and is an expense category
+	category, err := s.repo.GetCategoryByID(ctx, catID, uid)
+	if err != nil {
+		if db.IsNotFoundError(db.WrapDBError(ctx, err)) {
+			return nil, httpx.NewBadRequestError("category not found")
+		}
+		return nil, httpx.NewInternalError("could not check category")
+	}
+
+	if category.Type != "expense" {
+		return nil, httpx.NewBadRequestError("only expense categories can receive budget allocations")
+	}
+
+	// Verify no parent-child conflict in this budget
+	allCats, err := s.repo.ListCategories(ctx, uid)
+	if err == nil {
+		catMap := make(map[string]sqlc.Category)
+		for _, c := range allCats {
+			catMap[common.UUIDToString(c.ID)] = c
+		}
+
+		catAllocations, err := s.repo.ListBudgetCategories(ctx, bID)
+		if err == nil {
+			for _, ca := range catAllocations {
+				existingCatIDStr := common.UUIDToString(ca.CategoryID)
+				if existingCatIDStr == req.CategoryID {
+					continue
+				}
+
+				if category.ParentCategoryID.Valid && common.UUIDToString(category.ParentCategoryID) == existingCatIDStr {
+					return nil, httpx.NewBadRequestError("cannot allocate child category when parent category is already allocated in this budget")
+				}
+
+				if existingCat, ok := catMap[existingCatIDStr]; ok {
+					if existingCat.ParentCategoryID.Valid && common.UUIDToString(existingCat.ParentCategoryID) == req.CategoryID {
+						return nil, httpx.NewBadRequestError("cannot allocate parent category when child category is already allocated in this budget")
+					}
+				}
+			}
+		}
 	}
 
 	allocNumeric, _ := common.StringToNumeric(allocDec.StringFixed(4))

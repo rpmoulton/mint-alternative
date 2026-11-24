@@ -21,6 +21,8 @@ type Repository interface {
 	UpsertBudgetCategory(ctx context.Context, params sqlc.UpsertBudgetCategoryParams) (*sqlc.BudgetCategory, error)
 	DeleteBudgetCategory(ctx context.Context, budgetID, categoryID pgtype.UUID) error
 	GetMonthlyCategorySpending(ctx context.Context, params sqlc.GetMonthlySpendingByCategoryParams) ([]sqlc.GetMonthlySpendingByCategoryRow, error)
+	GetCategoryByID(ctx context.Context, id, userID pgtype.UUID) (*sqlc.Category, error)
+	ListCategories(ctx context.Context, userID pgtype.UUID) ([]sqlc.Category, error)
 }
 
 type repository struct {
@@ -122,6 +124,25 @@ func (r *repository) GetMonthlyCategorySpending(ctx context.Context, params sqlc
 	rows, err := r.query.GetMonthlySpendingByCategory(ctx, params)
 	if err != nil {
 		return nil, fmt.Errorf("get monthly category spending: %w", err)
+	}
+	return rows, nil
+}
+
+func (r *repository) GetCategoryByID(ctx context.Context, id, userID pgtype.UUID) (*sqlc.Category, error) {
+	c, err := r.query.GetCategoryByID(ctx, sqlc.GetCategoryByIDParams{
+		ID:     id,
+		UserID: userID,
+	})
+	if err != nil {
+		return nil, fmt.Errorf("get category %v: %w", id, err)
+	}
+	return &c, nil
+}
+
+func (r *repository) ListCategories(ctx context.Context, userID pgtype.UUID) ([]sqlc.Category, error) {
+	rows, err := r.query.ListCategories(ctx, userID)
+	if err != nil {
+		return nil, fmt.Errorf("list categories: %w", err)
 	}
 	return rows, nil
 }
